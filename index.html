@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chadapp</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="local-db.js"></script>
+  <script>function handleAvatarError(img){img.style.display='none'}</script>
+</head>
+<body>
+  <div id="appLoading" style="position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px;">
+    <i class="fas fa-comment-dots" style="font-size:48px;color:var(--accent);"></i>
+    <span style="font-weight:600;color:var(--text-muted);font-size:14px;">Chadapp</span>
+  </div>
+  <div class="phone-container">
+
+    <!-- SCREEN 1: Welcome -->
+    <div class="screen" id="screen-welcome">
+      <div class="welcome-content">
+        <div class="logo-circle">
+          <i class="fas fa-comment-dots"></i>
+          <span>Chadapp</span>
+        </div>
+        <h1 class="welcome-title" data-i18n="welcome.title">Hello !</h1>
+        <p class="welcome-desc" data-i18n="welcome.desc">WELCOME TO CHATAPP,<br>CONNECT WITH FRIENDS WORLDWIDE.</p>
+        <button class="btn-primary" data-i18n="welcome.btn" onclick="navigateTo('screen-signup')">GET STARTED</button>
+      </div>
+      <div class="welcome-decoration">
+        <div class="deco-circle deco-circle-1"></div>
+        <div class="deco-circle deco-circle-2"></div>
+        <div class="deco-circle deco-circle-3"></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 2: Create Account / Sign In -->
+    <div class="screen" id="screen-signup">
+      <div class="signup-content">
+        <h2 class="signup-title" data-i18n="signup.title">Create account</h2>
+        <p class="signup-subtitle" data-i18n="signup.subtitle">SIGN UP TO START MESSAGING<br>YOUR FRIENDS AND FAMILY</p>
+        <div class="form-group">
+          <label data-i18n="signup.name">Name</label>
+          <input type="text" id="signupName" placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label data-i18n="signup.email">Mail</label>
+          <input type="email" id="signupEmail" placeholder="john@example.com">
+        </div>
+        <div class="form-group">
+          <label data-i18n="signup.password">Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" placeholder="........">
+            <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility(this)"></i>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="signup.age">Age</label>
+          <input type="number" id="signupAge" placeholder="18" min="1" max="150">
+        </div>
+        <div class="form-group">
+          <label data-i18n="signup.gender">Gender</label>
+          <select class="modal-input" id="signupGender">
+            <option value="" data-i18n="signup.gender.select">Select...</option>
+            <option value="Male" data-i18n="signup.gender.male">Male</option>
+            <option value="Female" data-i18n="signup.gender.female">Female</option>
+            <option value="other_dne">Other doesn't exits</option>
+          </select>
+        </div>
+        <div class="checkbox-group">
+          <div>
+            <input type="checkbox" id="terms">
+            <label for="terms" data-i18n="signup.terms">I agree to the terms & conditions</label>
+            <i class="fas fa-chevron-down terms-arrow" onclick="toggleTerms(this)"></i>
+          </div>
+          <div class="terms-dropdown" id="termsDropdown">
+            <p>This app is made just for fun and for my personal project purposes. It is not intended to start a new business or compete with WhatsApp or Telegram. Please do not expect that much level of security. Your data is stored locally in your browser for testing purposes.</p>
+          </div>
+        </div>
+        <button class="btn-primary" data-i18n="signup.btn" onclick="handleSignup()">SIGN UP</button>
+        <div class="page-dots">
+          <span class="dot active" onclick="navigateTo('screen-signup')"></span>
+          <span class="dot" onclick="navigateTo('screen-login')"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 2.2: Complete Profile (for existing auth users without profile) -->
+    <div class="screen" id="screen-complete-profile">
+      <div class="signup-content">
+        <h2 class="signup-title">Complete your profile</h2>
+        <p class="signup-subtitle">SET YOUR DISPLAY NAME<br>TO START USING CHADAPP</p>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="completeProfileName" placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="completeProfileAge" placeholder="18" min="1" max="150">
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select class="modal-input" id="completeProfileGender">
+            <option value="">Select...</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="other_dne">Other doesn't exits</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="handleCompleteProfile()">CONTINUE</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 2.5: Login -->
+    <div class="screen" id="screen-login">
+      <div class="signup-content">
+        <h2 class="signup-title" data-i18n="login.title">Welcome back</h2>
+        <p class="signup-subtitle" data-i18n="login.subtitle">SIGN IN TO CONTINUE<br>YOUR CONVERSATIONS</p>
+        <div class="form-group">
+          <label data-i18n="signup.email">Mail</label>
+          <input type="email" placeholder="john@example.com">
+        </div>
+        <div class="form-group">
+          <label data-i18n="signup.password">Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" placeholder="........">
+            <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility(this)"></i>
+          </div>
+        </div>
+        <button class="btn-primary" data-i18n="login.btn" onclick="handleLogin()">SIGN IN</button>
+        <div class="page-dots">
+          <span class="dot" onclick="navigateTo('screen-signup')"></span>
+          <span class="dot active" onclick="navigateTo('screen-login')"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: Menu / Sidebar -->
+    <div class="screen" id="screen-menu">
+      <div class="menu-content">
+        <div class="menu-header">
+          <div class="menu-avatar">
+            <img src="x" onerror="handleAvatarError(this)" alt="avatar">
+          </div>
+          <div class="menu-user-info">
+            <span class="menu-name">Alex Johnson</span>
+          </div>
+        </div>
+        <div class="menu-items">
+          <div class="menu-item" onclick="navigateTo('screen-profile')">
+            <div class="menu-item-icon"><i class="fas fa-user"></i></div>
+            <span data-i18n="menu.profile">My Profile</span>
+          </div>
+          <div class="menu-item" onclick="navigateTo('screen-favorites')">
+            <div class="menu-item-icon"><i class="fas fa-heart"></i></div>
+            <span data-i18n="menu.favorites">Favorites</span>
+          </div>
+          <div class="menu-item" onclick="navigateTo('screen-conversations')">
+            <div class="menu-item-icon"><i class="fas fa-envelope"></i></div>
+            <span data-i18n="menu.messages">Messages</span>
+          </div>
+          <div class="menu-item" onclick="navigateTo('screen-settings')">
+            <div class="menu-item-icon"><i class="fas fa-cog"></i></div>
+            <span data-i18n="menu.settings">Settings</span>
+          </div>
+          <div class="menu-item" onclick="navigateTo('screen-notifications')">
+            <div class="menu-item-icon"><i class="fas fa-bell"></i></div>
+            <span data-i18n="menu.notifications">Notifications</span>
+          </div>
+        </div>
+        <div class="menu-footer">
+          <p data-i18n="menu.footer">Stay connected with your loved ones. Chat anytime, anywhere with Chadapp.</p>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 3.5: Conversations List -->
+    <div class="screen" id="screen-conversations">
+      <div class="conversations-header">
+        <h2>Chats</h2>
+        <div class="conversations-header-actions">
+          <i class="fas fa-search" onclick="navigateTo('screen-search')" title="Find People"></i>
+          <span class="bell-wrapper" onclick="toggleRequests()" title="Requests">
+            <i class="fas fa-bell" id="requestsBell"></i>
+            <span id="requestsBadge" class="badge-icon" style="display:none;">0</span>
+          </span>
+          <i class="fas fa-ellipsis-v" onclick="navigateTo('screen-settings')"></i>
+        </div>
+      </div>
+      <div class="conversations-list" id="conversationsList">
+        <div class="empty-state" id="chatsEmptyState">
+          <i class="fas fa-comment-dots" style="font-size:56px;opacity:0.4;"></i>
+          <h3>No chats yet</h3>
+          <p>Start a conversation by tapping the edit icon above</p>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item active" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Requests -->
+    <div class="screen" id="screen-requests">
+      <div class="conversations-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-conversations')" style="cursor:pointer;font-size:20px;"></i>
+        <h2 style="flex:1;margin:0 0 0 12px;">Requests</h2>
+      </div>
+      <div class="requests-list" id="requestsList">
+        <div class="empty-state"><i class="fas fa-inbox" style="font-size:56px;opacity:0.4;"></i><h3>No requests</h3><p>When someone sends you a chat request, it will appear here</p></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 4: Chat -->
+    <div class="screen" id="screen-chat">
+      <div class="chat-header">
+        <i class="fas fa-arrow-left chat-back" onclick="navigateTo('screen-conversations')"></i>
+        <div class="chat-user" style="cursor:pointer;">
+          <div class="chat-avatar-wrapper">
+            <img src="x" onerror="handleAvatarError(this)" alt="avatar" class="chat-avatar">
+            <span class="online-dot"></span>
+          </div>
+          <div class="chat-user-text">
+            <span class="chat-username">Sarah Wilson</span>
+            <span class="chat-status">Online</span>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <i class="fas fa-ellipsis-v" onclick="toggleChatMenu()"></i>
+        </div>
+        <div class="chat-header-dropdown" id="chatHeaderDropdown">
+          <div class="dropdown-item" onclick="searchInChat()"><i class="fas fa-search"></i> Search in Chat</div>
+          <div class="dropdown-item" onclick="clearChat()"><i class="fas fa-trash"></i> Clear Chat</div>
+          <div class="dropdown-item" id="chatBlockDropdownItem" onclick="blockFromChat()"><i class="fas fa-ban"></i> Block</div>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message received">
+          <div class="message-bubble" oncontextmenu="event.preventDefault();openContextMenu(this)" ondblclick="toggleReactions(this)">
+            <p>Hey! Are you coming to the party tonight?</p>
+            <span class="msg-time">10:28 AM</span>
+          </div>
+        </div>
+        <div class="message sent">
+          <div class="message-bubble" oncontextmenu="event.preventDefault();openContextMenu(this)" ondblclick="toggleReactions(this)">
+            <p>Yeah, I'll be there around 8pm!</p>
+            <span class="msg-status"><i class="fas fa-check-double"></i></span>
+            <span class="msg-time">10:29 AM</span>
+          </div>
+        </div>
+        <div class="message received">
+          <div class="message-bubble" oncontextmenu="event.preventDefault();openContextMenu(this)" ondblclick="toggleReactions(this)">
+            <p>Awesome! I'll save you a seat. Should I bring anything?</p>
+            <span class="msg-time">10:29 AM</span>
+          </div>
+        </div>
+        <div class="message sent">
+          <div class="message-bubble" oncontextmenu="event.preventDefault();openContextMenu(this)" ondblclick="toggleReactions(this)">
+            <p>I can bring some snacks and drinks</p>
+            <span class="msg-status"><i class="fas fa-check-double"></i></span>
+            <span class="msg-time">10:30 AM</span>
+          </div>
+        </div>
+        <div class="message sent">
+          <div class="message-bubble" oncontextmenu="event.preventDefault();openContextMenu(this)" ondblclick="toggleReactions(this)">
+            <p>Maybe some chips and soda?</p>
+            <span class="msg-status"><i class="fas fa-check"></i></span>
+            <span class="msg-time">10:30 AM</span>
+          </div>
+        </div>
+        <div class="message received">
+          <div class="message-bubble" oncontextmenu="event.preventDefault();openContextMenu(this)" ondblclick="toggleReactions(this)">
+            <p>Perfect! See you there then. Can't wait!</p>
+            <span class="msg-time">10:31 AM</span>
+          </div>
+        </div>
+      </div>
+      <div class="reply-preview" id="replyPreview">
+        <div class="reply-preview-content">
+          <span class="reply-preview-name" id="replyPreviewName">Replying to</span>
+          <span class="reply-preview-text" id="replyPreviewText">Message text</span>
+        </div>
+        <i class="fas fa-times reply-preview-close" onclick="cancelReply()"></i>
+      </div>
+      <div class="typing-indicator" id="typingIndicator">
+        <span>typing</span>
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="chat-input-bar">
+        <i class="fas fa-smile chat-action-btn" onclick="toggleEmojiPicker()"></i>
+        <input type="text" placeholder="Message" id="chatInput">
+        <i class="fas fa-paper-plane send-btn" onclick="sendMessage()" id="sendBtn"></i>
+      </div>
+      <div class="emoji-picker" id="emojiPicker"></div>
+    </div>
+
+
+    <!-- SCREEN 6: Profile -->
+    <div class="screen" id="screen-profile">
+      <div class="profile-content">
+        <h2 class="profile-page-title">YOUR PROFILE</h2>
+        <div class="profile-avatar-section">
+          <div class="profile-avatar-ring">
+            <img src="x" alt="avatar" class="profile-avatar-img">
+          </div>
+          <div class="profile-user-details">
+            <h3 class="profile-name" id="profileDisplayName">John Smith</h3>
+          </div>
+        </div>
+        <div class="profile-details-list">
+          <div class="profile-detail-item">
+            <span class="profile-detail-label">Email</span>
+            <span class="profile-detail-value" id="profileDisplayEmail">-</span>
+          </div>
+          <div class="profile-detail-item">
+            <span class="profile-detail-label">Age</span>
+            <span class="profile-detail-value" id="profileDisplayAge">-</span>
+          </div>
+          <div class="profile-detail-item">
+            <span class="profile-detail-label">Gender</span>
+            <span class="profile-detail-value" id="profileDisplayGender">-</span>
+          </div>
+          <div class="profile-detail-item">
+            <span class="profile-detail-label">Role</span>
+            <span class="profile-detail-value" id="profileDisplayRole">New user</span>
+          </div>
+        </div>
+        <div class="profile-info-section">
+          <div class="profile-info-item" onclick="navigateTo('screen-profile-settings')">
+            <i class="fas fa-user-edit"></i>
+            <span data-i18n="profile.edit">Edit Profile</span>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item active" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 6.5: User Profile (viewing others) -->
+    <div class="screen" id="screen-user-profile">
+      <div class="profile-content">
+        <div class="user-profile-header">
+          <i class="fas fa-arrow-left" onclick="navigateTo('screen-chat')" id="userProfileBack"></i>
+          <h2>PROFILE</h2>
+        </div>
+        <div class="profile-avatar-section">
+          <div class="profile-avatar-ring">
+            <img src="x" alt="avatar" class="profile-avatar-img" id="userProfileAvatar">
+          </div>
+          <div class="profile-user-details">
+            <h3 class="profile-name" id="userProfileName">Sarah Wilson</h3>
+            <p class="profile-role" id="userProfileStatus">Online</p>
+            <p class="profile-age" id="userProfileAge"></p>
+            <p class="profile-gender" id="userProfileGender"></p>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="profile-action-btn block" id="blockUserBtn" onclick="toggleBlockUser(this)"><i class="fas fa-ban"></i> Block</button>
+          <button class="profile-action-btn report" onclick="reportUser()"><i class="fas fa-flag"></i> Report</button>
+        </div>
+        <div class="profile-stats">
+          <div class="stat">
+            <span class="stat-number" id="profileMessageCount">0</span>
+            <span class="stat-label">Messages</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 7: Search / Find People -->
+    <div class="screen" id="screen-search">
+      <div class="search-header">
+        <div class="search-bar-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" placeholder="Search people..." id="searchInput" oninput="handleSearch()">
+        </div>
+      </div>
+      <div class="search-results" id="searchResults">
+        <!-- rendered by JS -->
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item active" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 8: Favorites -->
+    <div class="screen" id="screen-favorites">
+      <div class="favorites-header">
+        <h2>FAVORITES</h2>
+        <p class="favorites-subtitle">Your favorite conversations</p>
+      </div>
+      <div class="favorites-list" id="favoritesList">
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item active" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 9: Settings -->
+    <div class="screen" id="screen-settings">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-menu')"></i>
+        <h2>SETTINGS</h2>
+      </div>
+      <div class="settings-content">
+        <div class="settings-section">
+          <h4 class="settings-section-title" data-i18n="settings.account">Account</h4>
+          <div class="settings-item" onclick="navigateTo('screen-profile-settings')">
+            <div class="settings-item-left">
+              <i class="fas fa-user-circle"></i>
+              <span data-i18n="settings.profile">Profile Settings</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+          <div class="settings-item" onclick="navigateTo('screen-privacy')">
+            <div class="settings-item-left">
+              <i class="fas fa-lock"></i>
+              <span data-i18n="settings.privacy">Privacy</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+          <div class="settings-item" onclick="navigateTo('screen-security')">
+            <div class="settings-item-left">
+              <i class="fas fa-shield-alt"></i>
+              <span data-i18n="settings.security">Security</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title" data-i18n="settings.general">General</h4>
+          <div class="settings-item" onclick="toggleTheme()">
+            <div class="settings-item-left">
+              <i class="fas fa-moon"></i>
+              <span data-i18n="settings.darkmode">Dark Mode</span>
+            </div>
+            <div class="toggle-switch active" id="darkModeToggle">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="settings-item" onclick="navigateTo('screen-notifications')">
+            <div class="settings-item-left">
+              <i class="fas fa-bell"></i>
+              <span data-i18n="settings.notifications">Notifications</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+          <div class="settings-item" onclick="navigateTo('screen-language')">
+            <div class="settings-item-left">
+              <i class="fas fa-globe"></i>
+              <span data-i18n="settings.language">Language</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="currentLanguage">English</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title" data-i18n="settings.support">Support</h4>
+          <div class="settings-item" onclick="navigateTo('screen-help')">
+            <div class="settings-item-left">
+              <i class="fas fa-question-circle"></i>
+              <span data-i18n="settings.help">Help Center</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+          <div class="settings-item" onclick="navigateTo('screen-about')">
+            <div class="settings-item-left">
+              <i class="fas fa-info-circle"></i>
+              <span data-i18n="settings.about">About</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">
+          <i class="fas fa-sign-out-alt"></i> <span data-i18n="settings.logout">Log Out</span>
+        </button>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 10: Notifications -->
+    <div class="screen" id="screen-notifications">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-settings')"></i>
+        <h2>NOTIFICATIONS</h2>
+      </div>
+      <div class="settings-content">
+        <div class="settings-section">
+          <h4 class="settings-section-title">Message Notifications</h4>
+          <div class="settings-item" onclick="toggleSwitch(this)">
+            <div class="settings-item-left">
+              <i class="fas fa-comment"></i>
+              <span>Message Alerts</span>
+            </div>
+            <div class="toggle-switch active">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="settings-item" onclick="toggleSwitch(this)">
+            <div class="settings-item-left">
+              <i class="fas fa-volume-up"></i>
+              <span>Sound</span>
+            </div>
+            <div class="toggle-switch active">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="settings-item" onclick="toggleSwitch(this)">
+            <div class="settings-item-left">
+              <i class="fas fa-mobile-alt"></i>
+              <span>Vibration</span>
+            </div>
+            <div class="toggle-switch">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 11: Profile Settings -->
+    <div class="screen" id="screen-profile-settings">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-settings')"></i>
+        <h2>PROFILE SETTINGS</h2>
+      </div>
+      <div class="settings-content">
+        <div class="profile-settings-avatar">
+          <div class="profile-avatar-ring">
+            <img src="x" alt="avatar" class="profile-avatar-img">
+          </div>
+          <div class="change-photo-btn" onclick="changePhoto()">
+            <i class="fas fa-camera"></i> Change Photo
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">Personal Info</h4>
+          <div class="settings-item" onclick="editField('displayName')">
+            <div class="settings-item-left">
+              <i class="fas fa-user"></i>
+              <span>Display Name</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="displayNameValue">John Smith</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+          <div class="settings-item" onclick="editField('email')">
+            <div class="settings-item-left">
+              <i class="fas fa-envelope"></i>
+              <span>Email</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="emailValue">john@example.com</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+          <div class="settings-item" onclick="editField('age')">
+            <div class="settings-item-left">
+              <i class="fas fa-calendar"></i>
+              <span>Age</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="ageValue">-</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+          <div class="settings-item" onclick="editField('gender')">
+            <div class="settings-item-left">
+              <i class="fas fa-venus-mars"></i>
+              <span>Gender</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="genderValue">-</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+          <div class="settings-item" onclick="editField('role')">
+            <div class="settings-item-left">
+              <i class="fas fa-briefcase"></i>
+              <span>Role</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="roleValue">New user</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">Status</h4>
+          <div class="status-options">
+            <div class="status-option active" onclick="selectStatus(this)">
+              <span class="status-dot green"></span> Online
+            </div>
+            <div class="status-option" onclick="selectStatus(this)">
+              <span class="status-dot yellow"></span> Away
+            </div>
+            <div class="status-option" onclick="selectStatus(this)">
+              <span class="status-dot red"></span> Busy
+            </div>
+            <div class="status-option" onclick="selectStatus(this)">
+              <span class="status-dot gray"></span> Invisible
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-top: 16px;" onclick="saveProfile()">SAVE CHANGES</button>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item active" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 12: Language -->
+    <div class="screen" id="screen-language">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-settings')"></i>
+        <h2>LANGUAGE</h2>
+      </div>
+      <div class="settings-content">
+        <div class="language-list" id="languageList">
+          <div class="language-item active" onclick="selectLanguage(this, 'English')">
+            <div class="language-info"><span class="language-flag">&#127482;&#127480;</span><span class="language-name">English</span></div>
+            <i class="fas fa-check"></i>
+          </div>
+          <div class="language-item" onclick="selectLanguage(this, 'Spanish')">
+            <div class="language-info"><span class="language-flag">&#127466;&#127480;</span><span class="language-name">Spanish</span></div>
+            <i class="fas fa-check"></i>
+          </div>
+          <div class="language-item" onclick="selectLanguage(this, 'Hindi')">
+            <div class="language-info"><span class="language-flag">&#127470;&#127475;</span><span class="language-name">Hindi</span></div>
+            <i class="fas fa-check"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 13: Privacy -->
+    <div class="screen" id="screen-privacy">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-settings')"></i>
+        <h2>PRIVACY</h2>
+      </div>
+      <div class="settings-content">
+        <div class="settings-section">
+          <h4 class="settings-section-title">Who can see your info</h4>
+          <div class="settings-item" onclick="toggleSwitch(this)">
+            <div class="settings-item-left">
+              <i class="fas fa-check-double"></i>
+              <span>Read Receipts</span>
+            </div>
+            <div class="toggle-switch active">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="settings-item" onclick="toggleSwitch(this)">
+            <div class="settings-item-left">
+              <i class="fas fa-photo-video"></i>
+              <span>Profile Photo</span>
+            </div>
+            <div class="toggle-switch active">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">Messaging</h4>
+          <div class="settings-item" onclick="toggleAllowRequests(this)">
+            <div class="settings-item-left">
+              <i class="fas fa-user-plus"></i>
+              <span>Allow Request from Strangers</span>
+            </div>
+            <div class="toggle-switch active" id="allowRequestsToggle">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="settings-item" onclick="navigateTo('screen-blocked')">
+            <div class="settings-item-left">
+              <i class="fas fa-ban"></i>
+              <span>Blocked Contacts</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+        <div class="settings-section">
+
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 14.5: Blocked Contacts -->
+    <div class="screen" id="screen-blocked">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-privacy')"></i>
+        <h2>BLOCKED CONTACTS</h2>
+      </div>
+      <div class="settings-content">
+        <div class="empty-state" style="padding:60px 24px;">
+          <i class="fas fa-ban"></i>
+          <h3>No blocked contacts</h3>
+          <p>You haven't blocked anyone yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 15: Security -->
+    <div class="screen" id="screen-security">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-settings')"></i>
+        <h2>SECURITY</h2>
+      </div>
+      <div class="settings-content">
+        <div class="settings-section">
+          <h4 class="settings-section-title">Login Security</h4>
+
+          <div class="settings-item" onclick="navigateTo('screen-two-factor')">
+            <div class="settings-item-left">
+              <i class="fas fa-user-shield"></i>
+              <span>Two-Factor Authentication</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="twoFactorStatus">Off</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">Encryption</h4>
+          <div class="settings-item">
+            <div class="settings-item-left">
+              <i class="fas fa-lock"></i>
+              <span>End-to-End Encryption</span>
+            </div>
+            <div class="toggle-switch active" style="pointer-events:none;">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">Devices</h4>
+          <div class="settings-item" onclick="navigateTo('screen-active-devices')">
+            <div class="settings-item-left">
+              <i class="fas fa-mobile-alt"></i>
+              <span>Active Devices</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value" id="activeDevicesCount">0 devices</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">Account</h4>
+          <div class="settings-item" onclick="navigateTo('screen-change-password')">
+            <div class="settings-item-left">
+              <i class="fas fa-key"></i>
+              <span>Change Password</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+          <div class="settings-item" onclick="navigateTo('screen-delete-account')">
+            <div class="settings-item-left">
+              <i class="fas fa-trash"></i>
+              <span>Delete Account</span>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('screen-menu')"><i class="fas fa-home"></i><span data-i18n="nav.home">Home</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-favorites')"><i class="fas fa-heart"></i><span data-i18n="nav.favorite">Favorite</span></div>
+        <div class="nav-item" onclick="navigateTo('screen-conversations')"><i class="fas fa-comment"></i><span data-i18n="nav.chats">Chats</span></div>
+
+        <div class="nav-item" onclick="navigateTo('screen-profile')"><i class="fas fa-user"></i><span data-i18n="nav.profile">Profile</span></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 15.1: Change Password -->
+    <div class="screen" id="screen-change-password">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-security')"></i>
+        <h2>CHANGE PASSWORD</h2>
+      </div>
+      <div class="settings-content">
+        <div class="password-form">
+          <div class="form-group">
+            <label>Current Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" placeholder="Enter current password" id="currentPassword">
+              <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility(this)"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" placeholder="Enter new password" id="newPassword">
+              <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility(this)"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" placeholder="Confirm new password" id="confirmPassword">
+              <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility(this)"></i>
+            </div>
+          </div>
+          <div class="password-strength" id="passwordStrength">
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <span class="strength-text" id="strengthText">Weak</span>
+          </div>
+          <button class="btn-primary" onclick="changePassword()">UPDATE PASSWORD</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 15.2: Two-Factor Authentication -->
+    <div class="screen" id="screen-two-factor">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-security')"></i>
+        <h2>TWO-FACTOR AUTH</h2>
+      </div>
+      <div class="settings-content">
+        <div class="twofa-status">
+          <i class="fas fa-shield-alt twofa-icon" id="twofaStatusIcon"></i>
+          <p class="twofa-desc" id="twofaDesc">Two-factor authentication adds an extra layer of security to your account.</p>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">Setup Method</h4>
+          <div class="twofa-method" onclick="setupTwoFA('app')">
+            <div class="twofa-method-left">
+              <i class="fas fa-mobile-alt"></i>
+              <div>
+                <span>Authenticator App</span>
+                <p>Use Google Authenticator, Authy, or similar</p>
+              </div>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+          <div class="twofa-method" onclick="setupTwoFA('sms')">
+            <div class="twofa-method-left">
+              <i class="fas fa-comment-dots"></i>
+              <div>
+                <span>SMS Code</span>
+                <p>Receive codes via text message</p>
+              </div>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+        <button class="btn-logout" style="border-color:var(--accent);color:var(--accent);" onclick="disableTwoFA()">
+          <i class="fas fa-toggle-off"></i> Disable 2FA
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 15.3: Active Devices -->
+    <div class="screen" id="screen-active-devices">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-security')"></i>
+        <h2>ACTIVE DEVICES</h2>
+      </div>
+      <div class="settings-content">
+        <div class="devices-list" id="activeDevicesList">
+        </div>
+        <button class="btn-logout" style="margin-top:10px;" onclick="logoutAllDevices()">
+          <i class="fas fa-sign-out-alt"></i> Log Out All Devices
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 15.4: Delete Account -->
+    <div class="screen" id="screen-delete-account">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-security')"></i>
+        <h2>DELETE ACCOUNT</h2>
+      </div>
+      <div class="settings-content delete-account-content">
+        <div class="delete-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>This action is permanent and cannot be undone. All your data, messages, and media will be deleted.</p>
+        </div>
+        <div class="form-group">
+          <label>Reason for leaving</label>
+          <select class="modal-input" id="deleteReason">
+            <option value="">Select a reason...</option>
+            <option value="privacy">Privacy concerns</option>
+            <option value="switching">Switching to another app</option>
+            <option value="too-many">Too many notifications</option>
+            <option value="temporary">Taking a break</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Enter your password to confirm</label>
+          <input type="password" class="modal-input" placeholder="Enter your password" id="deletePassword">
+        </div>
+        <div class="checkbox-group" style="margin-bottom:20px;">
+          <input type="checkbox" id="confirmDelete">
+          <label for="confirmDelete">I understand that this action is permanent</label>
+        </div>
+        <button class="btn-primary" style="background:#e74c3c;color:#fff;" onclick="deleteAccount()">DELETE MY ACCOUNT</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 16: Help Center -->
+    <div class="screen" id="screen-help">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-settings')"></i>
+        <h2>HELP CENTER</h2>
+      </div>
+      <div class="settings-content help-content">
+        <div class="help-section">
+          <div class="help-item">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <strong>How to send a message?</strong>
+              <p>Open a chat, type your message in the input bar, and press the send button or hit Enter.</p>
+            </div>
+          </div>
+
+          <div class="help-item">
+            <i class="fas fa-user-cog"></i>
+            <div>
+              <strong>How to update my profile?</strong>
+              <p>Go to Settings &rarr; Profile Settings to edit your name, email, and profile photo.</p>
+            </div>
+          </div>
+          <div class="help-item">
+            <i class="fas fa-shield-alt"></i>
+            <div>
+              <strong>How to stay safe?</strong>
+              <p>Enable two-factor authentication in Security settings and review your Privacy preferences.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 17: About -->
+    <div class="screen" id="screen-about">
+      <div class="settings-header">
+        <i class="fas fa-arrow-left" onclick="navigateTo('screen-settings')"></i>
+        <h2>ABOUT</h2>
+      </div>
+      <div class="settings-content about-content">
+        <div class="about-logo">
+          <i class="fas fa-comment-dots"></i>
+          <span>Chadapp</span>
+        </div>
+        <p class="about-version">Version 1.0.0</p>
+        <p class="about-desc">Chadapp is a modern messaging application designed to help you stay connected with friends and family around the world. Fast, secure, and easy to use.</p>
+        <div class="about-details">
+          <div class="about-row"><span>Developer</span><span>Chadapp Team</span></div>
+          <div class="about-row"><span>Email</span><span>support@chadapp.com</span></div>
+          <div class="about-row"><span>Website</span><span>www.chadapp.com</span></div>
+          <div class="about-row"><span>Privacy Policy</span><span>chadapp.com/privacy</span></div>
+          <div class="about-row"><span>Terms of Service</span><span>chadapp.com/terms</span></div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h3 class="modal-title" id="modalTitle">Edit Field</h3>
+      <input type="text" class="modal-input" id="modalInput" style="display:none;">
+      <select class="modal-input" id="modalSelect" style="display:none;">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="other_dne">Other doesn't exits</option>
+      </select>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-btn save" onclick="saveModalField()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forward Modal -->
+  <div class="modal-overlay" id="forwardModal" onclick="if(event.target===this)closeForward()">
+    <div class="forward-container">
+      <div class="forward-header">
+        <span style="font-weight:600;font-size:16px;">Forward</span>
+        <i class="fas fa-times" onclick="closeForward()" style="cursor:pointer;font-size:18px;"></i>
+      </div>
+      <div class="forward-contacts" id="forwardContactsList">
+      </div>
+      <div class="forward-input-area">
+        <textarea id="forwardMessageInput" placeholder="Write a message..." rows="2"></textarea>
+        <button class="btn-primary" onclick="sendForward()" style="padding:12px;font-size:13px;flex-shrink:0;">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
