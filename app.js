@@ -1116,18 +1116,19 @@ async function sendForward() {
 
 async function deleteMessage() {
   if (!activeContextTarget) return;
+  const target = activeContextTarget;
   const msgs = await getMessages();
-  const msgIndex = Array.from(document.querySelectorAll('.chat-messages .message')).indexOf(activeContextTarget);
+  const msgIndex = Array.from(document.querySelectorAll('.chat-messages .message')).indexOf(target);
   const msg = msgs[msgIndex];
   if (msg?.id) {
     try {
       await sb.from('messages').delete().eq('id', msg.id);
     } catch (e) {}
   }
-  activeContextTarget.style.opacity = '0.3';
-  activeContextTarget.style.transition = 'opacity 0.3s';
-  setTimeout(() => activeContextTarget.remove(), 300);
+  target.style.opacity = '0.3';
+  target.style.transition = 'opacity 0.3s';
   closeContextMenu();
+  setTimeout(() => target.remove(), 300);
 }
 
 document.addEventListener('click', function(e) {
