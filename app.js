@@ -877,13 +877,11 @@ async function renderRequestsScreen() {
 
 async function acceptRequest(requestId, name) {
   try {
-    console.log('acceptRequest: start', { requestId, name });
-    const delResult = await sb.from('chat_requests').delete().eq('id', requestId);
-    console.log('acceptRequest: delete done', delResult);
+    invalidateProfilesCache();
     const allUsers = await getProfiles();
-    console.log('acceptRequest: profiles loaded', allUsers.length);
     const target = allUsers.find(u => u.name === name);
     if (!target) { showToast('User not found'); return; }
+    await sb.from('chat_requests').delete().eq('id', requestId);
     console.log('acceptRequest: target found', target.id);
     const conv = await ensureConversation(target.id, name);
     console.log('acceptRequest: conversation', conv);
