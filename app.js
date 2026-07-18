@@ -1122,7 +1122,7 @@ async function deleteMessage() {
   if (msgId) {
     try {
       await sb.from('messages').delete().eq('id', msgId);
-    } catch (e) {}
+    } catch (e) { console.error('Delete message failed:', e); }
   }
   target.style.opacity = '0.3';
   target.style.transition = 'opacity 0.3s';
