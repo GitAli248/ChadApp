@@ -34,7 +34,7 @@ function safeUrl(url) {
 async function handleSignup() {
   const name = document.getElementById('signupName');
   const email = document.getElementById('signupEmail');
-  const password = document.querySelector('#screen-signup input[type="password"]');
+  const password = document.getElementById('signupPassword');
   const age = document.getElementById('signupAge');
   const gender = document.getElementById('signupGender');
   const terms = document.getElementById('terms');
