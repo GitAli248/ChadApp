@@ -1119,11 +1119,13 @@ async function deleteMessage() {
   if (!activeContextTarget) return;
   const target = activeContextTarget;
   const msgId = target.dataset.msgId;
-  if (msgId) {
-    try {
-      await sb.from('messages').delete().eq('id', msgId);
-    } catch (e) { console.error('Delete message failed:', e); }
-  }
+  console.log('deleteMessage: msgId =', msgId);
+  if (!msgId) { showToast('Cannot find message ID'); return; }
+  try {
+    const res = await sb.from('messages').delete().eq('id', msgId);
+    console.log('deleteMessage: result', res);
+    if (res.error) { showToast('Delete error: ' + res.error.message); return; }
+  } catch (e) { console.error('Delete message failed:', e); showToast('Delete failed: ' + e.message); return; }
   target.style.opacity = '0.3';
   target.style.transition = 'opacity 0.3s';
   closeContextMenu();
